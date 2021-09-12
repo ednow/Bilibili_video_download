@@ -160,8 +160,8 @@ def combine_video(title_list):
                     L.append(video)
             # 拼接视频
             final_clip = concatenate_videoclips(L)
-            # 生成目标视频文件
-            final_clip.to_videofile(os.path.join(current_video_path, r'{}.mp4'.format(title)), fps=24, remove_temp=False)
+            # 生成目标视频文件,直接生成到下载目录上
+            final_clip.to_videofile(os.path.join(video_path, r'{}.mp4'.format(title)), fps=24, remove_temp=False)
             print('[视频合并完成]' + title)
         else:
             # 视频只有一段则直接打印下载完成
@@ -203,29 +203,32 @@ if __name__ == '__main__':
     # 创建线程池
     threadpool = []
     title_list = []
-    for item in cid_list:
-        cid = str(item['cid'])
-        title = item['part']
-        title = re.sub(r'[\/\\:*?"<>|]', '', title)  # 替换为空的
-        print('[下载视频的cid]:' + cid)
-        print('[下载视频的标题]:' + title)
-        title_list.append(title)
-        page = str(item['page'])
-        start_url = start_url + "/?p=" + page
-        video_list = get_play_list(start_url, cid, quality)
-        start_time = time.time()
-        # down_video(video_list, title, start_url, page)
-        # 定义线程
-        th = threading.Thread(target=down_video, args=(video_list, title, start_url, page))
-        # 将线程加入线程池
-        threadpool.append(th)
-        
-    # 开始线程
-    for th in threadpool:
-        th.start()
-    # 等待所有线程运行完毕
-    for th in threadpool:
-        th.join()
+    # 防止分p过多产生下线程过多现象
+    # 超参数,最多运行20个线程
+    for idx in range(0, len(cid_list), 20):
+        for item in cid_list:
+            cid = str(item['cid'])
+            title = item['part']
+            title = re.sub(r'[\/\\:*?"<>|]', '', title)  # 替换为空的
+            print('[下载视频的cid]:' + cid)
+            print('[下载视频的标题]:' + title)
+            title_list.append(title)
+            page = str(item['page'])
+            start_url = start_url + "/?p=" + page
+            video_list = get_play_list(start_url, cid, quality)
+            start_time = time.time()
+            # down_video(video_list, title, start_url, page)
+            # 定义线程
+            th = threading.Thread(target=down_video, args=(video_list, title, start_url, page))
+            # 将线程加入线程池
+            threadpool.append(th)
+
+        # 开始线程
+        for th in threadpool:
+            th.start()
+        # 等待所有线程运行完毕
+        for th in threadpool:
+            th.join()
     
     # 最后合并视频
     print(title_list)
