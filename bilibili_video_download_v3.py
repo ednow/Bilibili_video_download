@@ -12,7 +12,7 @@ __author__ = 'Henry'
 20190422 - 增加多P视频单独下载其中一集的功能
 20190702 - 增加视频多线程下载 速度大幅提升
 '''
-
+import shutil
 import requests, time, hashlib, urllib.request, re, json
 from moviepy.editor import *
 import os, sys, threading
@@ -164,8 +164,11 @@ def combine_video(title_list):
             final_clip.to_videofile(os.path.join(video_path, r'{}.mp4'.format(title)), fps=24, remove_temp=False)
             print('[视频合并完成]' + title)
         else:
-            # 视频只有一段则直接打印下载完成
+            # 视频只有一段则直接打印下载完成,并移动到下载目录
+            shutil.move(os.path.join(current_video_path, r'{}.flv'.format(title)), os.path.join(video_path, r'{}.flv'.format(title)))
             print('[视频合并完成]:' + title)
+        # 删除缓存文件夹
+        os.rmdir(current_video_path)
 
 
 if __name__ == '__main__':
