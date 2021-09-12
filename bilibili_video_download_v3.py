@@ -3,7 +3,6 @@
 # time: 2019/07/02--08:12
 __author__ = 'Henry'
 
-
 '''
 项目: B站视频下载 - 多线程下载
 
@@ -18,7 +17,9 @@ from moviepy.editor import *
 import os, sys, threading
 
 import imageio
+
 imageio.plugins.ffmpeg.download()
+
 
 # 访问API地址
 def get_play_list(start_url, cid, quality):
@@ -133,16 +134,19 @@ def down_video(video_list, title, start_url, page):
             os.makedirs(currentVideoPath)
         # 开始下载
         if len(video_list) > 1:
-            urllib.request.urlretrieve(url=i, filename=os.path.join(currentVideoPath, r'{}-{}.flv'.format(title, num)),reporthook=Schedule_cmd)  # 写成mp4也行  title + '-' + num + '.flv'
+            urllib.request.urlretrieve(url=i, filename=os.path.join(currentVideoPath, r'{}-{}.flv'.format(title, num)),
+                                       reporthook=Schedule_cmd)  # 写成mp4也行  title + '-' + num + '.flv'
         else:
-            urllib.request.urlretrieve(url=i, filename=os.path.join(currentVideoPath, r'{}.flv'.format(title)),reporthook=Schedule_cmd)  # 写成mp4也行  title + '-' + num + '.flv'
+            urllib.request.urlretrieve(url=i, filename=os.path.join(currentVideoPath, r'{}.flv'.format(title)),
+                                       reporthook=Schedule_cmd)  # 写成mp4也行  title + '-' + num + '.flv'
         num += 1
+
 
 # 合并视频(20190802新版)
 def combine_video(title_list):
     video_path = os.path.join(sys.path[0], 'bilibili_video')  # 下载目录
     for title in title_list:
-        current_video_path = os.path.join(video_path ,title)
+        current_video_path = os.path.join(video_path, title)
         if len(os.listdir(current_video_path)) >= 2:
             # 视频大于一段才要合并
             print('[下载完成,正在合并视频...]:' + title)
@@ -165,7 +169,8 @@ def combine_video(title_list):
             print('[视频合并完成]' + title)
         else:
             # 视频只有一段则直接打印下载完成,并移动到下载目录
-            shutil.move(os.path.join(current_video_path, r'{}.flv'.format(title)), os.path.join(video_path, r'{}.flv'.format(title)))
+            shutil.move(os.path.join(current_video_path, r'{}.flv'.format(title)),
+                        os.path.join(video_path, r'{}.flv'.format(title)))
             print('[视频合并完成]:' + title)
         # 删除缓存文件夹
         os.rmdir(current_video_path)
@@ -197,7 +202,7 @@ if __name__ == '__main__':
     cid_list = []
     if '?p=' in start:
         # 单独下载分P视频中的一集
-        p = re.search(r'\?p=(\d+)',start).group(1)
+        p = re.search(r'\?p=(\d+)', start).group(1)
         cid_list.append(data['pages'][int(p) - 1])
     else:
         # 如果p不存在就是全集下载
@@ -209,7 +214,7 @@ if __name__ == '__main__':
     # 防止分p过多产生下线程过多现象
     # 超参数,最多运行20个线程
     for idx in range(0, len(cid_list), 20):
-        for item in cid_list[idx: idx+20]:
+        for item in cid_list[idx: idx + 20]:
             cid = str(item['cid'])
             title = item['part']
             title = re.sub(r'[\/\\:*?"<>|]', '', title)  # 替换为空的
@@ -232,18 +237,17 @@ if __name__ == '__main__':
         # 等待所有线程运行完毕
         for th in threadpool:
             th.join()
-    
+
     # 最后合并视频
     print(title_list)
     combine_video(title_list)
-    
+
     end_time = time.time()  # 结束时间
     print('下载总耗时%.2f秒,约%.2f分钟' % (end_time - start_time, int(end_time - start_time) / 60))
     # 如果是windows系统，下载完成后打开下载目录
     currentVideoPath = os.path.join(sys.path[0], 'bilibili_video')  # 当前目录作为下载目录
     if (sys.platform.startswith('win')):
         os.startfile(currentVideoPath)
-
 
 # 分P视频下载测试: https://www.bilibili.com/video/av19516333/
 # 下载总耗时14.21秒,约0.23分钟
