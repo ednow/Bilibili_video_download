@@ -18,6 +18,26 @@ import os, sys, threading
 
 import imageio
 
+
+def bv_to_av(x):
+    """
+    参考文献 https://www.zhihu.com/question/381784377
+    @param x: BV号字符串
+    @return:
+    """
+    table = 'fZodR9XQDSUm21yCkr6zBqiveYah8bt4xsWpHnJE7jL5VG3guMTKNPAwcF'
+    tr = {}
+    for i in range(58):
+        tr[table[i]] = i
+    s = [11, 10, 3, 8, 4, 6]
+    xor = 177451812
+    add = 8728348608
+    r = 0
+    for i in range(6):
+        r += tr[x[s[i]]] * 58 ** i
+    return (r - add) ^ xor
+
+
 imageio.plugins.ffmpeg.download()
 
 
@@ -186,7 +206,11 @@ if __name__ == '__main__':
         start_url = 'https://api.bilibili.com/x/web-interface/view?aid=' + start
     else:
         # https://www.bilibili.com/video/av46958874/?spm_id_from=333.334.b_63686965665f7265636f6d6d656e64.16
-        start_url = 'https://api.bilibili.com/x/web-interface/view?aid=' + re.search(r'/av(\d+)/*', start).group(1)
+        if re.search(r'/av(\d+)/*', start) is not None:
+            start_url = 'https://api.bilibili.com/x/web-interface/view?aid=' + re.search(r'/av(\d+)/*', start).group(1)
+        # 是bv号的网址
+        else:
+            start_url = f"https://api.bilibili.com/x/web-interface/view?aid=" + str(bv_to_av(re.search(r'/(BV.*)/*', start).group(1)))
 
     # 视频质量
     # <accept_format><![CDATA[flv,flv720,flv480,flv360]]></accept_format>
