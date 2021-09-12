@@ -232,12 +232,12 @@ if __name__ == '__main__':
         # 如果p不存在就是全集下载
         cid_list = data['pages']
     # print(cid_list)
-    # 创建线程池
-    threadpool = []
     title_list = []
     # 防止分p过多产生下线程过多现象
     # 超参数,最多运行20个线程
     for idx in range(0, len(cid_list), 20):
+        # 创建线程池
+        threadpool = []
         for item in cid_list[idx: idx + 20]:
             cid = str(item['cid'])
             title = item['part']
