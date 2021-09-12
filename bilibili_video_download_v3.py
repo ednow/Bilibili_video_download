@@ -206,7 +206,7 @@ if __name__ == '__main__':
     # 防止分p过多产生下线程过多现象
     # 超参数,最多运行20个线程
     for idx in range(0, len(cid_list), 20):
-        for item in cid_list:
+        for item in cid_list[idx: idx+20]:
             cid = str(item['cid'])
             title = item['part']
             title = re.sub(r'[\/\\:*?"<>|]', '', title)  # 替换为空的
