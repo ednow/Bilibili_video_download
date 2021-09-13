@@ -11,12 +11,23 @@ __author__ = 'Henry'
 20190422 - 增加多P视频单独下载其中一集的功能
 20190702 - 增加视频多线程下载 速度大幅提升
 '''
+import os
 import shutil
-import requests, time, hashlib, urllib.request, re, json
-from moviepy.editor import *
-import os, sys, threading
-
+import sys
+import threading
+import json
+import hashlib
 import imageio
+import re
+import requests
+import time
+import urllib.request
+from moviepy.editor import *
+
+
+# 配置类
+class Configuration:
+    pass
 
 
 def bv_to_av(x):
@@ -193,14 +204,14 @@ def combine_video(title_list):
                         os.path.join(video_path, r'{}.flv'.format(title)))
             print('[视频合并完成]:' + title)
         # 删除缓存文件夹
-        os.rmdir(current_video_path)
+        shutil.rmtree(current_video_path)
 
 
 if __name__ == '__main__':
     start_time = time.time()
-    # 用户输入av号或者视频链接地址
-    print('*' * 30 + 'B站视频下载小助手' + '*' * 30)
-    start = input('请输入您要下载的B站av号或者视频链接地址:')
+    with open("config.json", "r", encoding="utf-8") as f:
+        config = json.load(f)
+    start = config["url"]
     if start.isdigit() == True:  # 如果输入的是av号
         # 获取cid的api, 传入aid即可
         start_url = 'https://api.bilibili.com/x/web-interface/view?aid=' + start
@@ -210,13 +221,14 @@ if __name__ == '__main__':
             start_url = 'https://api.bilibili.com/x/web-interface/view?aid=' + re.search(r'/av(\d+)/*', start).group(1)
         # 是bv号的网址
         else:
-            start_url = f"https://api.bilibili.com/x/web-interface/view?aid=" + str(bv_to_av(re.search(r'/(BV.*)/*', start).group(1)))
+            start_url = f"https://api.bilibili.com/x/web-interface/view?aid=" + str(
+                bv_to_av(re.search(r'/(BV.*)/*', start).group(1)))
 
     # 视频质量
     # <accept_format><![CDATA[flv,flv720,flv480,flv360]]></accept_format>
     # <accept_description><![CDATA[高清 1080P,高清 720P,清晰 480P,流畅 360P]]></accept_description>
     # <accept_quality><![CDATA[80,64,32,16]]></accept_quality>
-    quality = input('请输入您要下载视频的清晰度(1080p:80;720p:64;480p:32;360p:16)(填写80或64或32或16):')
+    quality = config["quality"]
     # 获取视频的cid,title
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'
@@ -233,6 +245,8 @@ if __name__ == '__main__':
         cid_list = data['pages']
     # print(cid_list)
     title_list = []
+    title_list.extend(cid_list[:config["start"]+1])
+    cid_list = cid_list[config["start"]:config["end"]] + cid_list[config["end"]]
     # 防止分p过多产生下线程过多现象
     # 超参数,最多运行20个线程
     for idx in range(0, len(cid_list), 20):
