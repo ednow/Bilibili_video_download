@@ -245,7 +245,7 @@ if __name__ == '__main__':
         cid_list = data['pages']
     # print(cid_list)
     title_list = []
-    title_list.extend(cid_list[:config["start"]-1])
+    title_list.extend(re.sub(r'[\/\\:*?"<>|]', '', item['part']) for item in cid_list[:config["start"]-1])
     cid_list = cid_list[config["start"]-1:]
     # 防止分p过多产生下线程过多现象
     # 超参数,最多运行20个线程
