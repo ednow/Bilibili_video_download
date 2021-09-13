@@ -48,7 +48,8 @@ pip3 install -r requirements.txt
  哈哈哈，感谢大家！笔芯哟~**:cupid::cupid:
 
 ## config
-start: int
-end: int
+start: int,闭区间,\[1,+infinity\],1代表第一p
 url: str
 quality: int
+
+end: int,闭区间\[1,+infinity\],-1代表最后一p

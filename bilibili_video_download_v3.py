@@ -245,8 +245,8 @@ if __name__ == '__main__':
         cid_list = data['pages']
     # print(cid_list)
     title_list = []
-    title_list.extend(cid_list[:config["start"]+1])
-    cid_list = cid_list[config["start"]:config["end"]] + cid_list[config["end"]]
+    title_list.extend(cid_list[:config["start"]-1])
+    cid_list = cid_list[config["start"]-1:]
     # 防止分p过多产生下线程过多现象
     # 超参数,最多运行20个线程
     for idx in range(0, len(cid_list), 20):
